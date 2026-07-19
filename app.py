@@ -169,4 +169,4 @@ else:
 # Pied de page
 # ---------------------------------------------------------
 st.sidebar.markdown("---")
-st.sidebar.caption("Projet ONEF / DIT — Détection de fraude bancaire par IA")
+st.sidebar.caption("Projet DIT — Détection de fraude bancaire par IA")
