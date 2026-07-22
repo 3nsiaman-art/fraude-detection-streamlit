@@ -13,6 +13,42 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------
+# Style CSS personnalisé (cartes métriques, boutons, tableaux)
+# ---------------------------------------------------------
+st.markdown(
+    """
+    <style>
+    /* Cartes de métriques */
+    div[data-testid="stMetric"] {
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        padding: 14px 18px;
+    }
+    div[data-testid="stMetricLabel"] {
+        font-size: 0.85rem;
+        color: #555;
+    }
+    /* Bouton principal */
+    div.stButton > button[kind="primary"] {
+        border-radius: 8px;
+        font-weight: 600;
+    }
+    /* Onglets */
+    button[data-baseweb="tab"] {
+        font-size: 1rem;
+        font-weight: 600;
+    }
+    /* Titre */
+    h1 {
+        padding-bottom: 0px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# ---------------------------------------------------------
 # Chargement du modèle et des artefacts (mis en cache)
 # ---------------------------------------------------------
 @st.cache_resource
@@ -30,6 +66,18 @@ features_num = metadata["features_num"]
 features_cat = metadata["features_cat"]
 loc_frequente = metadata["localisation_frequente"]
 
+# Couleurs cohérentes utilisées dans toute l'application
+CLASS_COLORS = {
+    "Normal": "#2e7d32",
+    "Suspect": "#e6a700",
+    "Fraude": "#c62828",
+}
+CLASS_BG = {
+    "Normal": "background-color: #e8f5e9; color: #1b5e20;",
+    "Suspect": "background-color: #fff8e1; color: #8a6d00;",
+    "Fraude": "background-color: #ffebee; color: #b71c1c;",
+}
+
 # ---------------------------------------------------------
 # En-tête
 # ---------------------------------------------------------
@@ -38,8 +86,7 @@ st.markdown(
     "Analysez une transaction ou un lot de transactions pour détecter un "
     "risque de fraude (classes : **Normal**, **Suspect**, **Fraude**)."
 )
-
-mode = st.sidebar.radio("Mode d'analyse", ["Transaction unique", "Fichier CSV (lot)"])
+st.divider()
 
 
 def build_features(df_raw: pd.DataFrame) -> pd.DataFrame:
@@ -65,10 +112,25 @@ def build_features(df_raw: pd.DataFrame) -> pd.DataFrame:
     return X
 
 
+def render_class_badge(classe: str, proba: float):
+    """Affiche un bandeau de résultat cohérent avec le code couleur global."""
+    if classe == "Fraude":
+        st.error(f"⚠️ **Transaction frauduleuse** — probabilité : {proba:.1%}")
+    elif classe == "Suspect":
+        st.warning(f"🟠 **Transaction suspecte** — probabilité : {proba:.1%}")
+    else:
+        st.success(f"✅ **Transaction normale** — probabilité : {proba:.1%}")
+
+
 # ===========================================================
-# MODE 1 : Transaction unique
+# NAVIGATION PAR ONGLETS
 # ===========================================================
-if mode == "Transaction unique":
+tab_unique, tab_lot = st.tabs(["🔎 Transaction unique", "📂 Fichier CSV (lot)"])
+
+# ===========================================================
+# ONGLET 1 : Transaction unique
+# ===========================================================
+with tab_unique:
     st.subheader("Saisie manuelle d'une transaction")
 
     id_clients_options = sorted(loc_frequente.keys())
@@ -87,82 +149,126 @@ if mode == "Transaction unique":
         localisation = st.selectbox("Localisation de la transaction", list(encoders["Localisation"].classes_))
 
     if st.button("Analyser la transaction", type="primary"):
-        date_complete = pd.Timestamp.combine(date_transaction, pd.Timestamp("00:00").time()) + pd.Timedelta(
-            hours=heure_transaction
-        )
-        transaction = pd.DataFrame(
-            [
-                {
-                    "ID Clients": id_client,
-                    "Montant": montant,
-                    "Date": date_complete,
-                    "Type de transaction": type_transaction,
-                    "Status operation": status_operation,
-                    "Localisation": localisation,
-                }
-            ]
-        )
+        with st.spinner("Analyse de la transaction en cours..."):
+            date_complete = pd.Timestamp.combine(date_transaction, pd.Timestamp("00:00").time()) + pd.Timedelta(
+                hours=heure_transaction
+            )
+            transaction = pd.DataFrame(
+                [
+                    {
+                        "ID Clients": id_client,
+                        "Montant": montant,
+                        "Date": date_complete,
+                        "Type de transaction": type_transaction,
+                        "Status operation": status_operation,
+                        "Localisation": localisation,
+                    }
+                ]
+            )
 
-        X = build_features(transaction)
-        prediction = model.predict(X)[0]
-        proba = model.predict_proba(X)[0]
-        classe_predite = target_encoder.inverse_transform([prediction])[0]
+            X = build_features(transaction)
+            prediction = model.predict(X)[0]
+            proba = model.predict_proba(X)[0]
+            classe_predite = target_encoder.inverse_transform([prediction])[0]
 
         st.divider()
-        if classe_predite == "Fraude":
-            st.error(f"⚠️ **Transaction frauduleuse** — probabilité : {proba[prediction]:.1%}")
-        elif classe_predite == "Suspect":
-            st.warning(f"🟠 **Transaction suspecte** — probabilité : {proba[prediction]:.1%}")
-        else:
-            st.success(f"✅ **Transaction normale** — probabilité : {proba[prediction]:.1%}")
+        render_class_badge(classe_predite, proba[prediction])
 
         proba_df = pd.DataFrame(
             {"Classe": target_encoder.classes_, "Probabilité": proba}
         ).sort_values("Probabilité", ascending=False)
-        st.dataframe(proba_df, hide_index=True, use_container_width=True)
-        st.bar_chart(proba_df.set_index("Classe"))
+
+        col_table, col_chart = st.columns([1, 1.4])
+        with col_table:
+            st.dataframe(
+                proba_df.style.format({"Probabilité": "{:.1%}"}),
+                hide_index=True,
+                use_container_width=True,
+            )
+        with col_chart:
+            st.bar_chart(
+                proba_df.set_index("Classe"),
+                color=[CLASS_COLORS.get(c, "#888888") for c in proba_df["Classe"]][:1] or None,
+            )
 
 # ===========================================================
-# MODE 2 : Fichier CSV (lot)
+# ONGLET 2 : Fichier CSV (lot)
 # ===========================================================
-else:
+with tab_lot:
     st.subheader("Analyse par lot (fichier CSV)")
-    st.caption("Le fichier doit avoir le même format que la base d'entraînement (séparateur ';').")
+
+    with st.expander("ℹ️ Format de fichier attendu", expanded=False):
+        st.write(
+            "Le fichier doit être un CSV avec séparateur `;` et contenir les mêmes "
+            "colonnes que la base d'entraînement : `ID Clients`, `Montant`, `Date`, "
+            "`Type de transaction`, `Status operation`, `Localisation`."
+        )
 
     fichier = st.file_uploader("Déposez un fichier CSV de transactions", type=["csv"])
 
     if fichier is not None:
         df_raw = pd.read_csv(fichier, sep=";")
-        st.write("Aperçu des données :", df_raw.head())
+        st.write("**Aperçu des données :**")
+        st.dataframe(df_raw.head(), use_container_width=True)
 
-        if st.button("Lancer l'analyse du lot"):
-            X = build_features(df_raw)
-            predictions = model.predict(X)
-            probas = model.predict_proba(X)
+        if st.button("Lancer l'analyse du lot", type="primary"):
+            with st.spinner(f"Analyse de {len(df_raw)} transaction(s) en cours..."):
+                X = build_features(df_raw)
+                predictions = model.predict(X)
+                probas = model.predict_proba(X)
 
-            df_result = df_raw.copy()
-            df_result["prediction"] = target_encoder.inverse_transform(predictions)
-            df_result["probabilite_fraude"] = probas[:, list(target_encoder.classes_).index("Fraude")]
+                df_result = df_raw.copy()
+                df_result["prediction"] = target_encoder.inverse_transform(predictions)
+                df_result["probabilite_fraude"] = probas[:, list(target_encoder.classes_).index("Fraude")]
 
-            nb_fraudes = (df_result["prediction"] == "Fraude").sum()
+            st.divider()
+
+            # --- Cartes de synthèse ---
+            total = len(df_result)
+            nb_normal = (df_result["prediction"] == "Normal").sum()
             nb_suspects = (df_result["prediction"] == "Suspect").sum()
-            st.warning(
-                f"**{nb_fraudes}** transaction(s) frauduleuse(s) et "
-                f"**{nb_suspects}** transaction(s) suspecte(s) détectée(s) sur {len(df_result)}."
-            )
+            nb_fraudes = (df_result["prediction"] == "Fraude").sum()
+            taux_risque = (nb_suspects + nb_fraudes) / total * 100 if total else 0
 
-            def highlight(row):
-                if row["prediction"] == "Fraude":
-                    return ["background-color: #ffcccc"] * len(row)
-                elif row["prediction"] == "Suspect":
-                    return ["background-color: #fff3cd"] * len(row)
-                return [""] * len(row)
+            c1, c2, c3, c4 = st.columns(4)
+            c1.metric("Total analysé", f"{total}")
+            c2.metric("✅ Normal", f"{nb_normal}")
+            c3.metric("🟠 Suspect", f"{nb_suspects}")
+            c4.metric("⚠️ Fraude", f"{nb_fraudes}", delta=f"{taux_risque:.1f}% à risque", delta_color="inverse")
 
-            st.dataframe(df_result.style.apply(highlight, axis=1), use_container_width=True)
+            st.write("")
+
+            col_dist, col_table = st.columns([1, 2])
+
+            with col_dist:
+                st.caption("Répartition par classe")
+                repartition = df_result["prediction"].value_counts().reindex(
+                    ["Normal", "Suspect", "Fraude"]
+                ).fillna(0)
+                st.bar_chart(repartition)
+
+            with col_table:
+                st.caption("Détail des transactions")
+
+                def highlight(row):
+                    style = CLASS_BG.get(row["prediction"], "")
+                    return [style] * len(row)
+
+                st.dataframe(
+                    df_result.style.apply(highlight, axis=1).format(
+                        {"probabilite_fraude": "{:.1%}"}
+                    ),
+                    use_container_width=True,
+                    height=350,
+                )
 
             csv_export = df_result.to_csv(index=False, sep=";").encode("utf-8")
             st.download_button(
-                "Télécharger les résultats", csv_export, "resultats_analyse.csv", "text/csv"
+                "⬇️ Télécharger les résultats",
+                csv_export,
+                "resultats_analyse.csv",
+                "text/csv",
+                type="primary",
             )
 
 # ---------------------------------------------------------
