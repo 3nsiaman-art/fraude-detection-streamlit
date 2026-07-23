@@ -156,7 +156,19 @@ def build_features(df_raw, encoders, scaler, features_num, features_cat, loc_fre
 def to_binaire(label):
     return "Fraude" if label == "Fraude" else "Non-fraude"
 
-
+# ---------------------------------------------------------
+# Bandeau de contexte
+# ---------------------------------------------------------
+st.markdown(
+    """
+    <div class="context-banner">
+        🏦 <b>Application développée dans le cadre du Master IA — Dakar Institute of Technology (DIT)</b>,
+        pour la détection automatisée de fraude bancaire par apprentissage automatique.
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+ 
 # ---------------------------------------------------------
 # Barre de navigation supérieure
 # ---------------------------------------------------------
