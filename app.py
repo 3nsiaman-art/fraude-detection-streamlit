@@ -9,11 +9,32 @@ from streamlit_option_menu import option_menu
 # ---------------------------------------------------------
 # Configuration de la page
 # ---------------------------------------------------------
-st.set_page_config(
-    page_title="Application de détection de Fraude Bancaire",
-    page_icon="🏦",
-    layout="wide",
-)
+st.markdown("""
+<div style="
+    background: linear-gradient(90deg, #0F172A, #1E3A8A);
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+    margin-bottom: 20px;
+">
+
+<h1 style="
+    color: white;
+    font-size: 42px;
+    font-weight: 700;
+    margin-bottom: 8px;">
+🏦 Application de détection de Fraude Bancaire
+</h1>
+
+<p style="
+    color: #E2E8F0;
+    font-size: 18px;
+    margin:0;">
+Détection intelligente des transactions frauduleuses grâce au Machine Learning
+</p>
+
+</div>
+""", unsafe_allow_html=True)
 
 REFERENCE_DATA_PATH = "transactions_reference.csv"  # <- adapte ce chemin si besoin
 
