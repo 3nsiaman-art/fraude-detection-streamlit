@@ -24,7 +24,7 @@ st.markdown("""
     font-size: 42px;
     font-weight: 700;
     margin-bottom: 8px;">
-🏦 Application de détection de Fraude Bancaire
+🏦 Application de détection de fraude bancaire
 </h1>
 
 <p style="
