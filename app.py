@@ -15,7 +15,7 @@ st.set_page_config(
     layout="wide",
 )
 
-REFERENCE_DATA_PATH = "data/transactions_reference.csv"  # <- adapte ce chemin si besoin
+REFERENCE_DATA_PATH = "transactions_reference.csv"  # <- adapte ce chemin si besoin
 
 CLASS_COLORS = {"Normal": "#1e8e3e", "Suspect": "#f2a900", "Fraude": "#d93025"}
 CLASS_BG = {
