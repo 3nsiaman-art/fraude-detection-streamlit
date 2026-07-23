@@ -9,6 +9,7 @@ from streamlit_option_menu import option_menu
 # ---------------------------------------------------------
 # Configuration de la page
 # ---------------------------------------------------------
+st.set_page_config(layout="wide")
 st.markdown("""
 <div style="
     background: linear-gradient(90deg, #0F172A, #1E3A8A);
