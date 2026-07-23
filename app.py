@@ -479,16 +479,7 @@ else:
 # ---------------------------------------------------------
 st.sidebar.markdown("---")
 st.sidebar.caption("Projet DIT — Détection de fraude bancaire par l'IA")
-# ---------------------------------------------------------
-# Bandeau de contexte
-# ---------------------------------------------------------
-st.markdown(
-    """
-    <div class="context-banner">
-        🏦 <b>Application développée par N'faly SIAMAN</b>,
+st.sidebar.markdown("---")
+st.sidebar.caption("<b>Application développée par N'faly SIAMAN</b>,
         pour la détection automatisée de fraude bancaire par apprentissage automatique.
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
- 
+    </div>")
