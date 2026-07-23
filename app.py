@@ -10,7 +10,7 @@ from streamlit_option_menu import option_menu
 # Configuration de la page
 # ---------------------------------------------------------
 st.set_page_config(
-    page_title="Détection de Fraude Bancaire",
+    page_title="Application de détection de Fraude Bancaire",
     page_icon="🏦",
     layout="wide",
 )
@@ -106,7 +106,6 @@ def kpi_card(label, value, sub, icon, color):
         """,
         unsafe_allow_html=True,
     )
-
 
 # ---------------------------------------------------------
 # Chargement des données de référence (pour Données / Modèle)
