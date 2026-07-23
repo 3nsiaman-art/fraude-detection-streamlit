@@ -191,7 +191,7 @@ with col_toggle:
 
 st.write("")
 
-# ===========================================================
+ ===========================================================
 # ONGLET : DONNÉES
 # ===========================================================
 if selected_tab == "Données":
@@ -241,7 +241,9 @@ if selected_tab == "Données":
             color="Classe", color_discrete_map=CLASS_COLORS,
         )
         fig.update_traces(textposition="outside")
-        fig.update_layout(showlegend=False, height=380, margin=dict(t=20, b=0))
+        fig.update_xaxes(type="category", tickmode="array",
+                          tickvals=repartition["Classe"], ticktext=repartition["Classe"])
+        fig.update_layout(showlegend=False, height=400, margin=dict(t=20, b=0))
         st.plotly_chart(fig, use_container_width=True)
 
     with col_right:
@@ -252,7 +254,7 @@ if selected_tab == "Données":
         top10.columns = ["Ville", "Nombre"]
         fig2 = px.bar(top10, x="Nombre", y="Ville", orientation="h", text="Nombre")
         fig2.update_traces(marker_color="#1a73e8", textposition="outside")
-        fig2.update_layout(height=380, margin=dict(t=20, b=0))
+        fig2.update_layout(height=400, margin=dict(t=20, b=0))
         st.plotly_chart(fig2, use_container_width=True)
 
 # ===========================================================
@@ -320,6 +322,31 @@ elif selected_tab == "Modèle":
         "jeu de test séparé, non vu à l'entraînement."
     )
 
+    st.write("")
+    st.markdown('<div class="panel-title">📋 À propos du modèle</div>', unsafe_allow_html=True)
+
+    algo_name = type(model).__name__
+    nb_features = len(features_num) + len(features_cat)
+    date_min_ref = df_ref["Date"].min().strftime("%d/%m/%Y")
+    date_max_ref = df_ref["Date"].max().strftime("%d/%m/%Y")
+    nb_estimateurs = getattr(model, "n_estimators", None)
+
+    about_rows = [
+        ("Algorithme", algo_name),
+        ("Nombre de variables (features)", str(nb_features)),
+        ("Classes prédites", ", ".join(target_encoder.classes_)),
+        ("Taille de la base de référence", f"{len(df_ref):,}".replace(",", " ") + " transactions"),
+        ("Période couverte", f"{date_min_ref} → {date_max_ref}"),
+    ]
+    if nb_estimateurs is not None:
+        about_rows.insert(1, ("Nombre d'arbres (n_estimators)", str(nb_estimateurs)))
+
+    rows_html = "".join(
+        f'<div class="about-row"><span>{label}</span><span>{value}</span></div>'
+        for label, value in about_rows
+    )
+    st.markdown(f'<div class="about-card">{rows_html}</div>', unsafe_allow_html=True)
+    
 # ===========================================================
 # ONGLET : ANALYSE (transaction unique)
 # ===========================================================
@@ -479,7 +506,17 @@ else:
 # ---------------------------------------------------------
 st.sidebar.markdown("---")
 st.sidebar.caption("Projet DIT — Détection de fraude bancaire par l'IA")
-st.sidebar.markdown("---")
-st.sidebar.caption("<b>Application développée par N'faly SIAMAN</b>,
+# ---------------------------------------------------------
+# Bandeau de contexte
+# ---------------------------------------------------------
+st.markdown(
+    """
+    <div class="context-banner" style="text-align: justify;">
+        🏦 <b><i>Application développée par N'faly SIAMAN</i></b>,
         pour la détection automatisée de fraude bancaire par apprentissage automatique.
-    </div>")
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+ 
