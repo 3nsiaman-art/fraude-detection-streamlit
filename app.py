@@ -320,33 +320,7 @@ elif selected_tab == "Modèle":
         "ℹ️ Si cette base de référence a servi à l'entraînement du modèle, ces scores "
         "peuvent être optimistes (pas de vraie généralisation). Idéalement, utilise un "
         "jeu de test séparé, non vu à l'entraînement."
-    )
-
-    st.write("")
-    st.markdown('<div class="panel-title">📋 À propos du modèle</div>', unsafe_allow_html=True)
-
-    algo_name = type(model).__name__
-    nb_features = len(features_num) + len(features_cat)
-    date_min_ref = df_ref["Date"].min().strftime("%d/%m/%Y")
-    date_max_ref = df_ref["Date"].max().strftime("%d/%m/%Y")
-    nb_estimateurs = getattr(model, "n_estimators", None)
-
-    about_rows = [
-        ("Algorithme", algo_name),
-        ("Nombre de variables (features)", str(nb_features)),
-        ("Classes prédites", ", ".join(target_encoder.classes_)),
-        ("Taille de la base de référence", f"{len(df_ref):,}".replace(",", " ") + " transactions"),
-        ("Période couverte", f"{date_min_ref} → {date_max_ref}"),
-    ]
-    if nb_estimateurs is not None:
-        about_rows.insert(1, ("Nombre d'arbres (n_estimators)", str(nb_estimateurs)))
-
-    rows_html = "".join(
-        f'<div class="about-row"><span>{label}</span><span>{value}</span></div>'
-        for label, value in about_rows
-    )
-    st.markdown(f'<div class="about-card">{rows_html}</div>', unsafe_allow_html=True)
-    
+    ) 
 # ===========================================================
 # ONGLET : ANALYSE (transaction unique)
 # ===========================================================
