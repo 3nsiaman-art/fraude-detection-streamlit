@@ -245,7 +245,7 @@ if selected_tab == "Données":
     with c3:
         kpi_card("Clients", f"{nb_clients}", f"{nb_villes} villes couvertes", "👥", "purple")
     with c4:
-        kpi_card("Montant médian", f"{montant_median:,.0f}".replace(",", " "), "FCFA par transaction", "🏦", "blue")
+        kpi_card("Montant médian", f"{montant_median:,.0f}".replace(",", " "), "FCFA par transaction", "💰","blue")
 
     st.write("")
     col_left, col_right = st.columns(2)
@@ -506,7 +506,7 @@ st.sidebar.caption("Projet DIT — Détection de fraude bancaire par l'IA")
 st.markdown(
     """
     <div class="context-banner" style="text-align: justify;">
-        🏦 <b><i>Application développée par N'faly SIAMAN</i></b>,
+         <b><i>Application développée par N'faly SIAMAN</i></b>,
         pour la détection automatisée de fraude bancaire par apprentissage automatique.
     </div>
     """,
