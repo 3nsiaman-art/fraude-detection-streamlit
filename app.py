@@ -165,7 +165,7 @@ col_nav, col_toggle = st.columns([4, 1])
 with col_nav:
     selected_tab = option_menu(
         menu_title=None,
-        options=["Données", "Modèle", "Analyse", "Import CSV"],
+        options=["Données", "Modèle", "Analyse individuelle", "Analyse groupée"],
         icons=["database", "cpu", "search", "cloud-upload"],
         orientation="horizontal",
         default_index=0,
